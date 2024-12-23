@@ -459,11 +459,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
     async with user_semaphores[user_id]:
-        if current_model == "gpt-4-vision-preview" or current_model == "gpt-4o" or update.message.photo is not None and len(update.message.photo) > 0:
-
-            logger.error(current_model)
-            # What is this? ^^^
-
+        if update.message.photo:
             if current_model != "gpt-4o" and current_model != "gpt-4-vision-preview":
                 current_model = "gpt-4o"
                 db.set_user_attribute(user_id, "current_model", "gpt-4o")
@@ -473,7 +469,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         else:
             task = asyncio.create_task(
                 message_handle_fn()
-            )            
+            )
 
         user_tasks[user_id] = task
 
