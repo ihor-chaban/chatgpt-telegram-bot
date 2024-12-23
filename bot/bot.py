@@ -88,7 +88,7 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
         user_semaphores[user.id] = asyncio.Semaphore(1)
 
     if db.get_user_attribute(user.id, "current_model") is None:
-        db.set_user_attribute(user.id, "current_model", config.models.default_text_model)
+        db.set_user_attribute(user.id, "current_model", config.models["default_text_model"])
 
     # back compatibility for n_used_tokens field
     n_used_tokens = db.get_user_attribute(user.id, "n_used_tokens")
@@ -562,7 +562,7 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    db.set_user_attribute(user_id, "current_model", config.models.default_text_model)
+    db.set_user_attribute(user_id, "current_model", config.models["default_text_model"])
 
     db.start_new_dialog(user_id)
     await update.message.reply_text("Starting new dialog ✅")
