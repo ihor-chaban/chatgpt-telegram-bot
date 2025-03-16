@@ -88,7 +88,7 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
         user_semaphores[user.id] = asyncio.Semaphore(1)
 
     if db.get_user_attribute(user.id, "current_model") is None:
-        db.set_user_attribute(user.id, "current_model", config.models["available_text_models"][0])
+        db.set_user_attribute(user.id, "current_model", config.models["default_text_model"])
 
     # back compatibility for n_used_tokens field
     n_used_tokens = db.get_user_attribute(user.id, "n_used_tokens")
@@ -459,11 +459,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
     async with user_semaphores[user_id]:
-        if current_model == "gpt-4-vision-preview" or current_model == "gpt-4o" or update.message.photo is not None and len(update.message.photo) > 0:
-
-            logger.error(current_model)
-            # What is this? ^^^
-
+        if update.message.photo:
             if current_model != "gpt-4o" and current_model != "gpt-4-vision-preview":
                 current_model = "gpt-4o"
                 db.set_user_attribute(user_id, "current_model", "gpt-4o")
@@ -473,7 +469,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         else:
             task = asyncio.create_task(
                 message_handle_fn()
-            )            
+            )
 
         user_tasks[user_id] = task
 
@@ -566,7 +562,7 @@ async def new_dialog_handle(update: Update, context: CallbackContext):
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
-    db.set_user_attribute(user_id, "current_model", "gpt-3.5-turbo")
+    db.set_user_attribute(user_id, "current_model", config.models["default_text_model"])
 
     db.start_new_dialog(user_id)
     await update.message.reply_text("Starting new dialog ✅")
